@@ -1,10 +1,8 @@
 """Main driver for program. Before running, make sure to have a directory
 called `figures` for matplotlib pictures to be stored in."""
 
-import copy
-import time
-from os import listdir, mkdir
 import pickle
+from pathlib import Path
 
 import ga_configs
 import ga_vc_optimization
@@ -37,16 +35,17 @@ def main():
     with_artefact=True
     vco_dir_name = f'trial_steps_ramps_{VCO_CONFIG.model_name}_{VCO_CONFIG.population_size}_{VCO_CONFIG.max_generations}_{VCO_CONFIG.steps_in_protocol}_{VCO_CONFIG.step_voltage_bounds[0]}_{VCO_CONFIG.step_voltage_bounds[1]}'
 
-    if not vco_dir_name in listdir('ga_results'):
-        mkdir(f'ga_results/{vco_dir_name}')
+    output_dir = Path(__file__).resolve().parent / 'ga_results' / vco_dir_name
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     for c in LIST_OF_CURRENTS:
-        f = f"./ga_results/{vco_dir_name}/ga_results_{c}_artefact_{WITH_ARTEFACT}"
+        f = output_dir / f'ga_results_{c}_artefact_{WITH_ARTEFACT}'
         print(f"Finding best protocol for {c}. Writing protocol to: {f}")
         VCO_CONFIG.target_current = c
         result = ga_vc_optimization.start_ga(VCO_CONFIG)
 
-        pickle.dump(result, open(f, 'wb'))
+        with f.open('wb') as output_file:
+            pickle.dump(result, output_file)
 
 if __name__ == '__main__':
     main()
