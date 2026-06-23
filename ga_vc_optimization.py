@@ -3,6 +3,7 @@ ADD COMMENT HERE
 """
 
 import copy
+from itertools import repeat
 import random
 from typing import List
 
@@ -25,8 +26,7 @@ def run_ga(ga_params, toolbox):
 
     print('\tEvaluating initial population.')
 
-    current_array = [current for _ in range(len(population))]
-    eval_input = np.transpose([population, current_array])
+    eval_input = zip(population, repeat(current))
     fitnesses = toolbox.map(toolbox.evaluate, eval_input)
 
     for ind, fit in zip(population, fitnesses):
@@ -60,7 +60,7 @@ def run_ga(ga_params, toolbox):
 
         updated_individuals = [i for i in offspring if not i.fitness.values]
 
-        eval_input = np.transpose([updated_individuals, current_array[0:len(updated_individuals)]])
+        eval_input = zip(updated_individuals, repeat(current))
         fitnesses = toolbox.map(toolbox.evaluate, eval_input)
 
         for ind, fit in zip(updated_individuals, fitnesses):
@@ -209,11 +209,9 @@ def start_ga(vco_config):
     toolbox.register('mate', _mate)
     toolbox.register('mutate', _mutate)
 
-    p = Pool()
-    toolbox.register("map", p.map)
-    #toolbox.register("map", map)
-
-    final_population = run_ga(VCGA_PARAMS, toolbox)
+    with Pool() as pool:
+        toolbox.register("map", pool.map)
+        final_population = run_ga(VCGA_PARAMS, toolbox)
 
     return final_population
 
@@ -225,4 +223,3 @@ def generate_statistics(population):
     print('\t\tMax fitness: {}'.format(max(fitness_values)))
     print('\t\tAverage fitness: {}'.format(np.mean(fitness_values)))
     print('\t\tStandard deviation: {}'.format(np.std(fitness_values)))
-
