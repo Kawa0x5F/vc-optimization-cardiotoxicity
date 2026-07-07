@@ -41,6 +41,7 @@ class GeneticAlgorithmResult(ABC):
         self.config = None
         self.baseline_trace = None
         self.generations = generations
+        self.all_individuals = generations
 
     def get_individual(self, generation, index):
         """Returns the individual at generation and index specified."""
